@@ -23,7 +23,7 @@ function newHuman(humanX, humanY) {
     armsRising: true,
     legsRising: true,
     stopRunning: false,
-    runSpeed: (naturalRandom() * 2),
+    runSpeed: (naturalRandom() * 5) - 1.2,
     leftLeg: 0,
     rightLeg: 0,
     leftArm: 0,
@@ -34,8 +34,9 @@ function newHuman(humanX, humanY) {
   }
   
   newHuman.runSpeed += newHuman.height/100;
-  if (newHuman.runSpeed > 1.3) newHuman.runSpeed=1.3;
-  
+  newHuman.runSpeed *= difficulty;
+  //if (newHuman.runSpeed > 1.3) newHuman.runSpeed=1.3;
+  console.log(newHuman.runSpeed);
   humans.push(newHuman);
 }
 
@@ -47,21 +48,43 @@ function setup() {
 var gameover = false;
 var lastSpawn = Date.now();
 var gameStarted = false;
+var difficulty = 0;
 
 function draw() {
   background(230);
   
   if (!gameStarted) {
     stroke(0);
-    circle(350,300,100);
+    
+    fill("green");
+    circle(150,350,100);
+    
+    fill("yellow");
+    circle(350,350,100);
+    
+    fill("red");
+    circle(550,350,100);
+    
+    
+    
+    
     
     textSize(32);
     textAlign(CENTER, CENTER);
     noStroke();
-    fill("#ff9933");
-    text('Place mouse in circle to start', 350, 200);
+    fill("black");
+    text('Choose difficulty to start', 350, 200);
     
-    if (true || (mouseX - 350)**2 + (mouseY - 200)**2 < (100**2)) {
+    if (true || (mouseX - 150)**2 + (mouseY - 300)**2 < (100**2)) {
+      difficulty = 1;
+      gameStarted = true;
+      newHuman(350,600);
+    } else if ((mouseX - 350)**2 + (mouseY - 300)**2 < (100**2)) {
+      difficulty = 1.2;
+      gameStarted = true;
+      newHuman(350,600);
+    } else if ((mouseX - 550)**2 + (mouseY - 300)**2 < (100**2)) {
+      difficulty = 1.4;
       gameStarted = true;
       newHuman(350,600);
     }
@@ -181,20 +204,23 @@ function draw() {
     }
     
     if (human.humanID == 0 && !gameover && gameStarted) {
-      if (mouseX > human.humanX) human.humanX += 1.5;
-      else human.humanX -= 1.5;
+      
+      
+      if (mouseX > human.humanX) human.humanX += Math.abs(mouseX - human.humanX) / (Math.abs(mouseX - human.humanX) + Math.abs(mouseY - human.humanY)) * 1.5;
+      else human.humanX -= Math.abs(mouseX - human.humanX) / (Math.abs(mouseX - human.humanX) + Math.abs(mouseY - human.humanY)) * 1.5;
 
-      if (mouseY > human.humanY) human.humanY += 1.5;
-      else human.humanY -= 1.5;
+      if (mouseY > human.humanY) human.humanY += Math.abs(mouseY - human.humanY) / (Math.abs(mouseX - human.humanX) + Math.abs(mouseY - human.humanY)) * 1.5;
+      else human.humanY -= Math.abs(mouseY - human.humanY) / (Math.abs(mouseX - human.humanX) + Math.abs(mouseY - human.humanY)) * 1.5;
+      
     } else {
-      if (humans[0].humanX > human.humanX) human.humanX += human.runSpeed * 0.5;
-      else human.humanX -= human.runSpeed * 0.5;
+      if (humans[0].humanX > human.humanX) human.humanX += Math.abs(humans[0].humanX - human.humanX) / (Math.abs(humans[0].humanX - human.humanX) + Math.abs(humans[0].humanY - human.humanY)) * 0.5;
+      else human.humanX -= Math.abs(humans[0].humanX - human.humanX) / (Math.abs(humans[0].humanX - human.humanX) + Math.abs(humans[0].humanY - human.humanY)) * 0.5;
 
-      if (humans[0].humanY > human.humanY) human.humanY += human.runSpeed * 0.5;
-      else human.humanY -= human.runSpeed * 0.5;
+      if (humans[0].humanY > human.humanY) human.humanY += Math.abs(humans[0].humanY - human.humanY) / (Math.abs(humans[0].humanX - human.humanX) + Math.abs(humans[0].humanY - human.humanY)) * 0.5;
+      else human.humanY -= Math.abs(humans[0].humanY - human.humanY) / (Math.abs(humans[0].humanY - human.humanX) + Math.abs(humans[0].humanY - human.humanY)) * 9.5
     }
     
-    if (Date.now() - lastSpawn > randint(3000,6000) && gameStarted) {
+    if (Date.now() - lastSpawn > randint(3000 / difficulty,6000 / difficulty) && gameStarted) {
       lastSpawn = Date.now();
       
       if (humans.length < 3) newHuman(720,100);
