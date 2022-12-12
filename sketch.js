@@ -1,26 +1,29 @@
 let humans = [];
 
-
 function naturalRandom() {
   var rand = 0;
   for (var i = 0; i < 32; i += 1) rand += Math.random();
   return rand / 32;
 }
 
-function newHuman() {
+function randint(min, max) {
+    return Math.floor( Math.random() * (min + 1 + max) ) + min;
+}
+
+function newHuman(humanX, humanY) {
   var newHuman = {
     armDistance: 30,
     armSize: 30,
     legsHeight: 60,
     legsDistance: 50,
-    humanX: 100,
-    humanY: 10,
+    humanX: humanX,
+    humanY: humanY,
     height: (naturalRandom() * 100) - 40,
-    isRunning: false,
+    isRunning: true,
     armsRising: true,
     legsRising: true,
     stopRunning: false,
-    runSpeed: (naturalRandom() * 10) - 3.5,
+    runSpeed: (naturalRandom() * 2),
     leftLeg: 0,
     rightLeg: 0,
     leftArm: 0,
@@ -30,8 +33,8 @@ function newHuman() {
     humanID: humans.length
   }
   
-  newHuman.runSpeed += newHuman.height/10;
-  if (newHuman.runSpeed > 3) newHuman.runSpeed=3;
+  newHuman.runSpeed += newHuman.height/100;
+  if (newHuman.runSpeed > 1.3) newHuman.runSpeed=1.3;
   
   humans.push(newHuman);
 }
@@ -41,10 +44,28 @@ function setup() {
   frameRate(60);
 }
 
+var gameover = false;
+var lastSpawn = Date.now();
+var gameStarted = false;
+
 function draw() {
   background(230);
   
-  
+  if (!gameStarted) {
+    stroke(0);
+    circle(350,300,100);
+    
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    noStroke();
+    fill("#ff9933");
+    text('Place mouse in circle to start', 350, 200);
+    
+    if (true || (mouseX - 350)**2 + (mouseY - 200)**2 < (100**2)) {
+      gameStarted = true;
+      newHuman(350,600);
+    }
+  }
  
   
   for (var i=0; i<humans.length; i++) {
@@ -73,12 +94,12 @@ function draw() {
       human.hitbox[1][1] - human.hitbox[0][1]
     ); //hitbox visualizer */
     
-    human.humanY = mouseY;
+    //human.humanY = mouseY;
     
     translate(human.humanX,human.humanY);
     fill(0,0,0,0);
     
-    human.scale = 0.35 + (human.humanY / 600) * 2;
+    human.scale = 0.6 + (human.humanY / 600) * 1.5;
     
     scale(human.scale);
     //Human
@@ -158,25 +179,53 @@ function draw() {
 
 
     }
-
-
-    if (Math.abs(mouseX-human.humanX) > 3) {
-      if (Math.abs(mouseX-human.humanX) < 15) human.stopRunning = true; 
-      // Stop moving animation 15px away for smoother transition
-      else human.isRunning = true;
-
-      //if (mouseX > human.humanX) human.humanX += human.runSpeed;
-      //else human.humanX -= human.runSpeed;
-
-    } else {
-      human.stopRunning = true;
-    } 
     
-  }
+    if (human.humanID == 0 && !gameover && gameStarted) {
+      if (mouseX > human.humanX) human.humanX += 1.5;
+      else human.humanX -= 1.5;
+
+      if (mouseY > human.humanY) human.humanY += 1.5;
+      else human.humanY -= 1.5;
+    } else {
+      if (humans[0].humanX > human.humanX) human.humanX += human.runSpeed * 0.5;
+      else human.humanX -= human.runSpeed * 0.5;
+
+      if (humans[0].humanY > human.humanY) human.humanY += human.runSpeed * 0.5;
+      else human.humanY -= human.runSpeed * 0.5;
+    }
+    
+    if (Date.now() - lastSpawn > randint(3000,6000) && gameStarted) {
+      lastSpawn = Date.now();
+      
+      if (humans.length < 3) newHuman(720,100);
+      else newHuman((humans[0].humanX > 350 ? 720 : 0),(humans[0].humanY > 300 ? 600 : 100));
+    }
+  } // End of human movement loops
+  
+  
+  //safespace
+  
+  translate(610,-10);
+  scale(0.3);
+  push();
+  stroke(0);
+  fill("#ffcc66");
+  rect(75,150,250,250);
+  
+  fill("#ff9933");
+  triangle(75, 150, 325, 152, 200, 40);
+  
+  fill(60);
+  rect(150,250, 75,150);
+  
+  fill("#ff9933");
+  noStroke();
+  rect(200,0,130)
+  
+  pop();
+  
 }
 
-newHuman();
-
 function mouseClicked() {
-  //newHuman();
+  
 }
